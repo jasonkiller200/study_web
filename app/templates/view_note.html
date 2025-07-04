@@ -1,0 +1,103 @@
+{% extends "base.html" %}
+
+{% block title %}{{ note.title }}{% endblock %}
+
+{% block content %}
+<div class="py-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h1 class="h3 mb-1">{{ note.title }}</h1>
+            <p class="text-muted mb-2">
+                <i class="fas fa-folder"></i> {{ note.category }} &nbsp;
+                <i class="fas fa-clock"></i> {{ note.updated_at.strftime('%Y-%m-%d %H:%M') }}
+            </p>
+        </div>
+        <div class="btn-group">
+            <a href="{{ url_for('notes.edit_note', id=note.id) }}" class="btn btn-outline-secondary">
+                <i class="fas fa-edit"></i> 編輯
+            </a>
+            <a href="{{ url_for('notes.delete_note', id=note.id) }}" class="btn btn-outline-danger" onclick="return confirm('確定要刪除這筆記錄嗎？')">
+                <i class="fas fa-trash"></i> 刪除
+            </a>
+        </div>
+    </div>
+
+    {% if processed_tags %}
+    <div class="mb-4">
+        {% for tag in processed_tags %}
+            <a href="#" class="badge bg-secondary" onclick="scrollToTag('{{ tag }}'); return false;">{{ tag }}</a>
+        {% endfor %}
+    </div>
+    {% endif %}
+
+    <div class="card">
+        <div class="card-body">
+            <div class="content-display">
+                {{ note.content | safe }}
+            </div>
+        </div>
+    </div>
+
+    <div class="mt-4">
+        <a href="{{ url_for('main.index') }}" class="btn btn-primary">
+            <i class="fas fa-arrow-left"></i> 返回列表
+        </a>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+function scrollToTag(tagText) {
+    const contentDisplay = document.querySelector('.content-display');
+    if (!contentDisplay) {
+        console.warn('Content display area not found.');
+        return;
+    }
+
+    // Use a simpler approach for now, as window.find can be tricky with dynamic content
+    // and precise scrolling to arbitrary text in rich HTML is complex.
+    // This will highlight the first occurrence of the text.
+    const regex = new RegExp(tagText.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'gi');
+    const walker = document.createTreeWalker(contentDisplay, NodeFilter.SHOW_TEXT, null, false);
+    let node;
+    while ((node = walker.nextNode())) {
+        const match = node.nodeValue.match(regex);
+        if (match) {
+            // Found the text, now try to scroll to it.
+            // This is a simplified approach. For robust highlighting/scrolling,
+            // a library like mark.js would be ideal.
+            const range = document.createRange();
+            range.setStart(node, node.nodeValue.indexOf(match[0]));
+            range.setEnd(node, node.nodeValue.indexOf(match[0]) + match[0].length);
+
+            const rect = range.getBoundingClientRect();
+            window.scrollTo({
+                top: window.scrollY + rect.top - 100, // Offset for better visibility
+                behavior: 'smooth'
+            });
+
+            // Optional: Temporarily highlight the text
+            const span = document.createElement('span');
+            span.style.backgroundColor = 'yellow';
+            span.style.transition = 'background-color 1s ease-out';
+            range.surroundContents(span);
+
+            setTimeout(() => {
+                span.style.backgroundColor = 'transparent';
+                setTimeout(() => {
+                    const parent = span.parentNode;
+                    while (span.firstChild) {
+                        parent.insertBefore(span.firstChild, span);
+                    }
+                    parent.removeChild(span);
+                }, 1000); // After transition, remove span
+            }, 1000); // Highlight for 1 second
+
+            return; // Scroll to first occurrence and exit
+        }
+    }
+    console.log(`Tag "${tagText}" not found in content.`);
+}
+</script>
+{% endblock %}

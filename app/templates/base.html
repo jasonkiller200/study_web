@@ -4,9 +4,9 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{% block title %}個人學習心得記錄分享{% endblock %}</title>
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css" rel="stylesheet">
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism.min.css" rel="stylesheet">
+    {% assets "css_all" %}
+        <link rel="stylesheet" href="{{ ASSET_URL }}">
+    {% endassets %}
     <style>
         .navbar-brand {
             font-weight: bold;
@@ -39,7 +39,7 @@
 <body>
     <nav class="navbar navbar-expand-lg navbar-dark bg-success">
         <div class="container">
-            <a class="navbar-brand" href="{{ url_for('index') }}">
+            <a class="navbar-brand" href="{{ url_for('main.index') }}">
                 <i class="fas fa-leaf"></i> 個人學習心得
             </a>
             <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
@@ -48,17 +48,17 @@
             <div class="collapse navbar-collapse" id="navbarNav">
                 <ul class="navbar-nav me-auto">
                     <li class="nav-item">
-                        <a class="nav-link" href="{{ url_for('index') }}">
+                        <a class="nav-link" href="{{ url_for('main.index') }}">
                             <i class="fas fa-home"></i> 首頁
                         </a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" href="{{ url_for('add_note') }}">
+                        <a class="nav-link" href="{{ url_for('notes.add_note') }}">
                             <i class="fas fa-plus"></i> 新增筆記
                         </a>
                     </li>
                 </ul>
-                <form class="d-flex" method="GET" action="{{ url_for('search') }}">
+                <form class="d-flex" method="GET" action="{{ url_for('main.search') }}">
                     <input class="form-control me-2" type="search" name="q" placeholder="搜尋筆記..." 
                            value="{{ search_query if search_query else '' }}">
                     <button class="btn btn-outline-light" type="submit">
@@ -75,12 +75,12 @@
                 <div class="sidebar p-3">
                     <h6 class="text-muted mb-3">學習分類</h6>
                     <div class="list-group list-group-flush">
-                        <a href="{{ url_for('index') }}" 
+                        <a href="{{ url_for('main.index') }}" 
                            class="list-group-item list-group-item-action {% if not current_category %}active{% endif %}">
                             <i class="fas fa-list"></i> 全部筆記
                         </a>
                         {% for category in categories %}
-                        <a href="{{ url_for('category_view', category_name=category) }}" 
+                        <a href="{{ url_for('main.category_view', category_name=category) }}" 
                            class="list-group-item list-group-item-action {% if current_category == category %}active{% endif %}">
                             <i class="fas fa-folder"></i> {{ category }}
                         </a>
@@ -106,27 +106,9 @@
         </div>
     </div>
 
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-core.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/plugins/autoloader/prism-autoloader.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/tinymce/6.8.2/tinymce.min.js" referrerpolicy="origin"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/marked/5.1.1/marked.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/@yaireo/tagify"></script>
-    <script src="https://cdn.jsdelivr.net/npm/@yaireo/tagify/dist/tagify.polyfills.min.js"></script>
-    
-    <script>
-        // Markdown 渲染
-        document.addEventListener('DOMContentLoaded', function() {
-            const markdownElements = document.querySelectorAll('.markdown-content');
-            markdownElements.forEach(function(element) {
-                const markdownText = element.textContent;
-                element.innerHTML = marked.parse(markdownText, { headerIds: false, mangle: false });
-            });
-            
-            // 語法高亮
-            Prism.highlightAll();
-        });
-    </script>
+    {% assets "js_all" %}
+        <script src="{{ ASSET_URL }}"></script>
+    {% endassets %}
     
     {% block scripts %}{% endblock %}
 </body>

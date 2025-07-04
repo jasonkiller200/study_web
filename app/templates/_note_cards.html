@@ -1,0 +1,49 @@
+{% for note in notes %}
+<div class="col-md-6 col-lg-4 mb-4 note-card">
+    <div class="card h-100">
+        <div class="card-body">
+            <h5 class="card-title">
+                <a href="{{ url_for('notes.view_note', id=note.id) }}" class="text-decoration-none">
+                    {{ note.title }}
+                </a>
+            </h5>
+            <p class="card-text">
+                <small class="text-muted">
+                    <i class="fas fa-folder"></i> {{ note.category }}
+                </small>
+            </p>
+            <p class="card-text">
+                {{ note.content[:100] | safe }}{% if note.content|length > 100 %}...{% endif %}
+            </p>
+            {% if note.processed_tags %}
+                        <div class="mb-2">
+                            {% for tag in note.processed_tags %}
+                                <a href="{{ url_for('main.search', q=tag.strip()) }}" class="badge bg-secondary text-decoration-none">{{ tag.strip() }}</a>
+                            {% endfor %}
+                        </div>
+                        {% endif %}
+            <p class="card-text">
+                <small class="text-muted">
+                    <i class="fas fa-clock"></i> 
+                    {{ note.updated_at.strftime('%Y-%m-%d %H:%M') }}
+                </small>
+            </p>
+        </div>
+        <div class="card-footer bg-transparent">
+            <div class="btn-group w-100" role="group">
+                <a href="{{ url_for('notes.view_note', id=note.id) }}" class="btn btn-outline-primary btn-sm">
+                    <i class="fas fa-eye"></i> 檢視
+                </a>
+                <a href="{{ url_for('notes.edit_note', id=note.id) }}" class="btn btn-outline-secondary btn-sm">
+                    <i class="fas fa-edit"></i> 編輯
+                </a>
+                <a href="{{ url_for('notes.delete_note', id=note.id) }}" 
+                   class="btn btn-outline-danger btn-sm"
+                   onclick="return confirm('確定要刪除這筆記錄嗎？')">
+                    <i class="fas fa-trash"></i> 刪除
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endfor %}

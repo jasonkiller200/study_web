@@ -1,0 +1,78 @@
+{% extends "base.html" %}
+
+{% block title %}編輯學習筆記{% endblock %}
+
+{% block content %}
+<div class="py-4">
+    <h1 class="h3 mb-4">編輯學習筆記</h1>
+    <form method="POST" action="{{ url_for('notes.edit_note', id=note.id) }}" id="editNoteForm">
+        <div class="mb-3">
+            <label for="title" class="form-label">標題</label>
+            <input type="text" class="form-control" id="title" name="title" value="{{ note.title }}" required>
+        </div>
+        <div class="mb-3">
+            <label for="category" class="form-label">分類</label>
+            <input type="text" class="form-control" id="category" name="category" value="{{ note.category }}" required>
+        </div>
+        <div class="mb-3">
+            <label for="content" class="form-label">內容</label>
+            <div id="editor" style="height: 300px;">{{ note.content | safe }}</div>
+            <input type="hidden" name="content" id="hiddenContent">
+        </div>
+        <div class="mb-3">
+            <label for="tags" class="form-label">標籤 (以逗號分隔)</label>
+            <input type="text" class="form-control" id="tags" name="tags" value="{{ note.tags }}">
+        </div>
+        <button type="submit" class="btn btn-success">
+            <i class="fas fa-save"></i> 更新
+        </button>
+        <a href="{{ url_for('notes.view_note', id=note.id) }}" class="btn btn-secondary">
+            <i class="fas fa-times"></i> 取消
+        </a>
+    </form>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    var quill = new Quill('#editor', {
+        theme: 'snow',
+        modules: {
+            toolbar: [
+                ['bold', 'italic', 'underline', 'strike'],
+                ['blockquote', 'code-block'],
+                [{ 'list': 'ordered'}, { 'list': 'bullet' }],
+                [{ 'script': 'sub'}, { 'script': 'super' }],
+                [{ 'indent': '-1'}, { 'indent': '+1' }],
+                [{ 'direction': 'rtl' }],
+                [{ 'size': ['small', false, 'large', 'huge'] }],
+                [{ 'header': [1, 2, 3, 4, 5, 6, false] }],
+                [{ 'color': [] }, { 'background': [] }],
+                [{ 'font': [] }],
+                [{ 'align': [] }],
+                ['link', 'image', 'video'],
+                ['clean']
+            ]
+        }
+    });
+
+    // Set initial content for edit page
+    var initialContent = document.querySelector('#editor').innerHTML;
+    quill.clipboard.dangerouslyPasteHTML(initialContent);
+
+    var form = document.querySelector('#editNoteForm');
+    console.log("Form element found:", form); // Debugging line
+    form.addEventListener('submit', function(event) {
+        var hiddenContent = document.querySelector('#hiddenContent');
+        console.log("Quill content on submit:", quill.root.innerHTML); // Debugging line
+        hiddenContent.value = quill.root.innerHTML;
+    });
+
+    var input = document.querySelector('#tags');
+    new Tagify(input, {
+        // 如果需要，可以在這裡加入 Tagify 的設定
+    });
+});
+</script>
+{% endblock %}
