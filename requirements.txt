@@ -3,3 +3,5 @@ Flask-SQLAlchemy
 Werkzeug
 Flask-Assets
 Pillow
+python.exe -m pip install --upgrade pip
+pip install flask_assets
