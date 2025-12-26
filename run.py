@@ -1,15 +1,13 @@
 import os
 from app import create_app, db
-from app.models import LearningNote
+# from app.models import LearningNote # Moved inside init_db_if_needed
 
 app = create_app(os.getenv('FLASK_CONFIG') or 'default')
 
-@app.shell_context_processor
-def make_shell_context():
-    return dict(db=db, LearningNote=LearningNote)
 
 def init_db_if_needed():
     with app.app_context():
+        from app.models import LearningNote # Import LearningNote within app context
         # This is a simple check. For more complex scenarios, you might need migrations.
         inspector = db.inspect(db.engine)
         if not inspector.has_table(LearningNote.__tablename__):
@@ -118,4 +116,4 @@ def init_db_if_needed():
 
 if __name__ == '__main__':
     init_db_if_needed()
-    app.run(host='0.0.0.0', port=5006, debug=True)
+    app.run(host='0.0.0.0', port=5006, debug=False)

@@ -14,3 +14,102 @@
 .content-display {
   font-size: 1em; /* Ensure default font size for content */
 }
+
+/* ===== Dark Theme Overrides ===== */
+
+body {
+    background-color: #222;
+    color: #fff;
+}
+
+.sidebar {
+    /* The !important is to be sure we override the inline style in base.html if it was left */
+    background-color: #272b30 !important;
+}
+
+.list-group-item {
+    background-color: #272b30;
+    border-color: rgba(255, 255, 255, 0.125);
+    color: #ccc;
+}
+a.list-group-item:hover, a.list-group-item:focus {
+    background-color: #333;
+    color: #fff;
+}
+.list-group-item.active {
+    background-color: #00bc8c; /* Darkly theme accent */
+    border-color: #00bc8c;
+    color: #fff;
+}
+
+.card {
+    background-color: #272b30;
+    border-color: rgba(255, 255, 255, 0.125);
+}
+
+/* Quill.js Dark Theme */
+.ql-editor {
+    color: #ced4da;
+}
+
+.ql-toolbar {
+    background: #343a40;
+    border-bottom: 1px solid #495057 !important;
+}
+
+.ql-container.ql-snow {
+    border: 1px solid #495057 !important;
+}
+
+.ql-snow .ql-stroke {
+    stroke: #ced4da;
+}
+.ql-snow .ql-fill, .ql-snow .ql-stroke.ql-fill {
+    fill: #ced4da;
+}
+.ql-snow .ql-picker {
+    color: #ced4da;
+}
+.ql-snow .ql-picker-options {
+    background-color: #343a40;
+    border-color: #495057 !important;
+}
+
+/* Tagify Dark Theme */
+.tagify {
+    --tag-bg: #00bc8c; /* Darkly accent */
+    --tag-text-color: #fff;
+    border-color: #495057;
+    background-color: #343a40; /* Add a background for the input area */
+}
+.tagify__input {
+    color: #fff;
+}
+
+/* Remove conflicting style from base.html's <pre> tag */
+pre {
+   background-color: transparent !important;
+}
+
+/* Ensure navbar toggler icon is visible on dark backgrounds */
+.navbar-dark .navbar-toggler-icon {
+    background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 30 30'%3e%3cpath stroke='rgba%28255, 255, 255, 0.55%29' stroke-linecap='round' stroke-miterlimit='10' stroke-width='2' d='M4 7h22M4 15h22M4 23h22'/%3e%3c/svg%3e");
+}
+
+/* Adjust form controls for dark theme */
+.form-control, .form-select {
+    background-color: #343a40;
+    color: #fff;
+    border-color: #495057;
+}
+
+.form-control:focus, .form-select:focus {
+    background-color: #343a40;
+    color: #fff;
+    border-color: #00bc8c;
+    box-shadow: 0 0 0 0.25rem rgba(0, 188, 140, .25);
+}
+
+.form-control::placeholder {
+    color: #6c757d;
+}

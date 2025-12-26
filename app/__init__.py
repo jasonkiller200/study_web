@@ -1,24 +1,25 @@
 import os
 from flask import Flask
 from flask_sqlalchemy import SQLAlchemy
-from flask_assets import Environment, Bundle
+from flask_assets import Environment
+from webassets.bundle import Bundle
 from config import config
 
 db = SQLAlchemy()
 assets = Environment()
 
 def create_app(config_name):
-    app = Flask(__name__, instance_relative_config=True)
-    app.config.from_object(config[config_name])
+    flask_app = Flask(__name__, instance_relative_config=True)
+    flask_app.config.from_object(config[config_name])
 
     # Ensure the instance folder exists
     try:
-        os.makedirs(app.instance_path)
+        os.makedirs(flask_app.instance_path)
     except OSError:
         pass
 
-    db.init_app(app)
-    assets.init_app(app)
+    db.init_app(flask_app)
+    assets.init_app(flask_app)
 
     # Define asset bundles
     js_bundle = Bundle(
@@ -42,9 +43,19 @@ def create_app(config_name):
     assets.register('css_all', css_bundle)
 
     from .main import main as main_blueprint
-    app.register_blueprint(main_blueprint)
+    flask_app.register_blueprint(main_blueprint)
 
     from .notes import notes as notes_blueprint
-    app.register_blueprint(notes_blueprint, url_prefix='/notes')
+    flask_app.register_blueprint(notes_blueprint, url_prefix='/notes')
 
-    return app
+    # Import models to ensure they are registered with SQLAlchemy
+    with flask_app.app_context():
+        import app.models
+
+    def make_shell_context():
+        from app.models import LearningNote
+        return dict(db=db, LearningNote=LearningNote)
+
+    flask_app.shell_context_processor(make_shell_context)
+
+    return flask_app

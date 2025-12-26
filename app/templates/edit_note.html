@@ -5,24 +5,47 @@
 {% block content %}
 <div class="py-4">
     <h1 class="h3 mb-4">編輯學習筆記</h1>
-    <form method="POST" action="{{ url_for('notes.edit_note', id=note.id) }}" id="editNoteForm">
+    <form method="POST" action="{{ url_for('notes.edit_note', id=note.id) }}" id="noteForm">
         <div class="mb-3">
             <label for="title" class="form-label">標題</label>
             <input type="text" class="form-control" id="title" name="title" value="{{ note.title }}" required>
         </div>
+        
+        <!-- New Dynamic Category Section -->
         <div class="mb-3">
-            <label for="category" class="form-label">分類</label>
-            <input type="text" class="form-control" id="category" name="category" value="{{ note.category }}" required>
+            <label for="category-select" class="form-label">分類</label>
+            <div class="input-group">
+                <select class="form-select" id="category-select" name="category_id" required>
+                    <option value="" disabled>請選擇一個分類...</option>
+                    {% for category in categories %}
+                    <option value="{{ category.id }}" {% if note.category_id and category.id == note.category_id %}selected{% endif %}>{{ category.name }}</option>
+                    {% endfor %}
+                </select>
+                <button class="btn btn-outline-secondary" type="button" id="add-category-btn" title="新增分類">
+                    <i class="fas fa-plus"></i>
+                </button>
+            </div>
+            <div id="add-category-form" class="mt-2" style="display: none;">
+                <div class="input-group">
+                    <input type="text" id="new-category-name" class="form-control" placeholder="輸入新分類名稱...">
+                    <button class="btn btn-success" type="button" id="save-category-btn">儲存</button>
+                    <button class="btn btn-danger" type="button" id="cancel-add-category-btn">取消</button>
+                </div>
+                <div id="category-error" class="form-text text-danger mt-1"></div>
+            </div>
         </div>
+
         <div class="mb-3">
             <label for="content" class="form-label">內容</label>
-            <div id="editor" style="height: 300px;">{{ note.content | safe }}</div>
-            <input type="hidden" name="content" id="hiddenContent">
+            <div id="editor" style="height: 300px;"></div>
+            <input type="hidden" name="content" id="hiddenContent" value="{{ note.content | e }}">
         </div>
+        
         <div class="mb-3">
-            <label for="tags" class="form-label">標籤 (以逗號分隔)</label>
-            <input type="text" class="form-control" id="tags" name="tags" value="{{ note.tags }}">
+            <label for="tags" class="form-label">標籤</label>
+            <input type="text" class="form-control" id="tags" name="tags" value="{{ note.tags | e }}">
         </div>
+
         <button type="submit" class="btn btn-success">
             <i class="fas fa-save"></i> 更新
         </button>
@@ -36,42 +59,91 @@
 {% block scripts %}
 <script>
 document.addEventListener('DOMContentLoaded', function() {
+    // Quill Editor Setup
     var quill = new Quill('#editor', {
         theme: 'snow',
         modules: {
             toolbar: [
-                ['bold', 'italic', 'underline', 'strike'],
-                ['blockquote', 'code-block'],
+                ['bold', 'italic', 'underline', 'strike'], ['blockquote', 'code-block'],
                 [{ 'list': 'ordered'}, { 'list': 'bullet' }],
-                [{ 'script': 'sub'}, { 'script': 'super' }],
-                [{ 'indent': '-1'}, { 'indent': '+1' }],
-                [{ 'direction': 'rtl' }],
-                [{ 'size': ['small', false, 'large', 'huge'] }],
                 [{ 'header': [1, 2, 3, 4, 5, 6, false] }],
-                [{ 'color': [] }, { 'background': [] }],
-                [{ 'font': [] }],
-                [{ 'align': [] }],
                 ['link', 'image', 'video'],
                 ['clean']
             ]
         }
     });
-
     // Set initial content for edit page
-    var initialContent = document.querySelector('#editor').innerHTML;
-    quill.clipboard.dangerouslyPasteHTML(initialContent);
+    const initialContent = document.getElementById('hiddenContent').value;
+    quill.root.innerHTML = initialContent;
 
-    var form = document.querySelector('#editNoteForm');
-    console.log("Form element found:", form); // Debugging line
-    form.addEventListener('submit', function(event) {
+    // Tagify Setup
+    var input = document.querySelector('#tags');
+    new Tagify(input);
+
+    // Form Submission: Copy Quill content to hidden field
+    var form = document.querySelector('#noteForm');
+    form.addEventListener('submit', function(e) {
         var hiddenContent = document.querySelector('#hiddenContent');
-        console.log("Quill content on submit:", quill.root.innerHTML); // Debugging line
         hiddenContent.value = quill.root.innerHTML;
     });
 
-    var input = document.querySelector('#tags');
-    new Tagify(input, {
-        // 如果需要，可以在這裡加入 Tagify 的設定
+    // --- New Dynamic Category Logic ---
+    const addCategoryBtn = document.getElementById('add-category-btn');
+    const addCategoryForm = document.getElementById('add-category-form');
+    const saveCategoryBtn = document.getElementById('save-category-btn');
+    const cancelAddCategoryBtn = document.getElementById('cancel-add-category-btn');
+    const newCategoryNameInput = document.getElementById('new-category-name');
+    const categorySelect = document.getElementById('category-select');
+    const categoryError = document.getElementById('category-error');
+
+    addCategoryBtn.addEventListener('click', () => {
+        addCategoryForm.style.display = 'block';
+        addCategoryBtn.style.display = 'none';
+        newCategoryNameInput.focus();
+    });
+
+    cancelAddCategoryBtn.addEventListener('click', () => {
+        addCategoryForm.style.display = 'none';
+        addCategoryBtn.style.display = 'block';
+        newCategoryNameInput.value = '';
+        categoryError.textContent = '';
+    });
+
+    saveCategoryBtn.addEventListener('click', async () => {
+        const name = newCategoryNameInput.value.trim();
+        if (!name) {
+            categoryError.textContent = '分類名稱不能為空。';
+            return;
+        }
+        categoryError.textContent = '';
+
+        try {
+            const response = await fetch("{{ url_for('notes.add_category') }}", {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Accept': 'application/json'
+                },
+                body: JSON.stringify({ name: name })
+            });
+
+            const data = await response.json();
+
+            if (!response.ok) {
+                throw new Error(data.error || '儲存失敗，請稍後再試。');
+            }
+
+            if (!categorySelect.querySelector(`option[value="${data.id}"]`)) {
+                const newOption = new Option(data.name, data.id);
+                categorySelect.add(newOption);
+            }
+            
+            categorySelect.value = data.id;
+            cancelAddCategoryBtn.click();
+
+        } catch (error) {
+            categoryError.textContent = error.message;
+        }
     });
 });
 </script>
