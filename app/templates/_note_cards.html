@@ -9,7 +9,7 @@
             </h5>
             <p class="card-text">
                 <small class="text-muted">
-                    <i class="fas fa-folder"></i> {{ note.category }}
+                    <i class="fas fa-folder"></i> {{ note.category.name }}
                 </small>
             </p>
             <p class="card-text">
@@ -34,11 +34,11 @@
                 <a href="{{ url_for('notes.view_note', id=note.id) }}" class="btn btn-outline-primary btn-sm">
                     <i class="fas fa-eye"></i> 檢視
                 </a>
-                <a href="{{ url_for('notes.edit_note', id=note.id) }}" class="btn btn-outline-secondary btn-sm">
+                <a href="{{ url_for('notes.edit_note', id=note.id) }}" class="btn btn-outline-secondary btn-sm admin-required">
                     <i class="fas fa-edit"></i> 編輯
                 </a>
                 <a href="{{ url_for('notes.delete_note', id=note.id) }}" 
-                   class="btn btn-outline-danger btn-sm"
+                   class="btn btn-outline-danger btn-sm admin-required"
                    onclick="return confirm('確定要刪除這筆記錄嗎？')">
                     <i class="fas fa-trash"></i> 刪除
                 </a>

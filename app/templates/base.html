@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="zh-TW">
+<html lang="zh-TW" data-bs-theme="dark">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -53,10 +53,19 @@
                         </a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" href="{{ url_for('notes.add_note') }}">
+                        <a class="nav-link admin-required" href="{{ url_for('notes.add_note') }}">
                             <i class="fas fa-plus"></i> 新增筆記
                         </a>
                     </li>
+                </ul>
+                <ul class="navbar-nav">
+                    {% if session.is_admin %}
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ url_for('main.admin_logout') }}">
+                            <i class="fas fa-sign-out-alt"></i> 管理員登出
+                        </a>
+                    </li>
+                    {% endif %}
                 </ul>
                 <form class="d-flex" method="GET" action="{{ url_for('main.search') }}">
                     <input class="form-control me-2" type="search" name="q" placeholder="搜尋筆記..." 
@@ -93,7 +102,7 @@
                 {% with messages = get_flashed_messages(with_categories=true) %}
                     {% if messages %}
                         {% for category, message in messages %}
-                            <div class="alert alert-{{ 'success' if category == 'success' else 'danger' }} alert-dismissible fade show mt-3" role="alert">
+                            <div class="alert alert-{{ category }} alert-dismissible fade show mt-3" role="alert">
                                 {{ message }}
                                 <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
                             </div>
@@ -106,10 +115,98 @@
         </div>
     </div>
 
+    <!-- Admin Login Modal -->
+    <div class="modal fade" id="admin-login-modal" tabindex="-1" aria-labelledby="adminModalLabel" aria-hidden="true">
+      <div class="modal-dialog">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title" id="adminModalLabel">管理員驗證</h5>
+            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+          </div>
+          <div class="modal-body">
+            <p>此操作需要管理員權限，請輸入密碼。</p>
+            <input type="password" class="form-control" id="admin-password-input" placeholder="管理員密碼">
+            <div id="admin-login-error" class="text-danger mt-2" style="min-height: 1.2em;"></div>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">取消</button>
+            <button type="button" class="btn btn-primary" id="admin-login-submit">送出</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+
     {% assets "js_all" %}
         <script src="{{ ASSET_URL }}"></script>
     {% endassets %}
     
+    <script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const adminModalElement = document.getElementById('admin-login-modal');
+        if (adminModalElement) {
+            const adminModal = new bootstrap.Modal(adminModalElement);
+            let targetUrl = null;
+
+            document.body.addEventListener('click', function(event) {
+                const target = event.target.closest('.admin-required');
+                if (target) {
+                    event.preventDefault();
+                    targetUrl = target.href;
+                    
+                    const passwordInput = document.getElementById('admin-password-input');
+                    const errorDiv = document.getElementById('admin-login-error');
+                    
+                    passwordInput.value = '';
+                    if(errorDiv) errorDiv.textContent = '';
+                    
+                    adminModal.show();
+                }
+            });
+
+            const submitButton = document.getElementById('admin-login-submit');
+            if (submitButton) {
+                submitButton.addEventListener('click', async function() {
+                    const passwordInput = document.getElementById('admin-password-input');
+                    const password = passwordInput.value;
+                    const errorDiv = document.getElementById('admin-login-error');
+                    errorDiv.textContent = '';
+
+                    try {
+                        const response = await fetch("{{ url_for('main.check_admin') }}", {
+                            method: 'POST',
+                            headers: {'Content-Type': 'application/json'},
+                            body: JSON.stringify({ password: password })
+                        });
+                        
+                        const data = await response.json();
+                        
+                        if (response.ok && data.success) {
+                            adminModal.hide();
+                            // Add a small delay to allow modal to hide before redirecting
+                            setTimeout(() => { window.location.href = targetUrl; }, 150);
+                        } else {
+                            errorDiv.textContent = data.message || '驗證失敗。';
+                            passwordInput.focus();
+                        }
+                    } catch (err) {
+                        errorDiv.textContent = '發生網路錯誤，請稍後再試。';
+                    }
+                });
+            }
+
+            const passwordInput = document.getElementById('admin-password-input');
+            if (passwordInput) {
+                passwordInput.addEventListener('keypress', function(event) {
+                    if (event.key === 'Enter') {
+                        event.preventDefault(); // Prevent form submission if it's in a form
+                        submitButton.click();
+                    }
+                });
+            }
+        }
+    });
+    </script>
     {% block scripts %}{% endblock %}
 </body>
 </html>

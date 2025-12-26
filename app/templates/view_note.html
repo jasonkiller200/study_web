@@ -13,10 +13,10 @@
             </p>
         </div>
         <div class="btn-group">
-            <a href="{{ url_for('notes.edit_note', id=note.id) }}" class="btn btn-outline-secondary">
+            <a href="{{ url_for('notes.edit_note', id=note.id) }}" class="btn btn-outline-secondary admin-required">
                 <i class="fas fa-edit"></i> 編輯
             </a>
-            <a href="{{ url_for('notes.delete_note', id=note.id) }}" class="btn btn-outline-danger" onclick="return confirm('確定要刪除這筆記錄嗎？')">
+            <a href="{{ url_for('notes.delete_note', id=note.id) }}" class="btn btn-outline-danger admin-required" onclick="return confirm('確定要刪除這筆記錄嗎？')">
                 <i class="fas fa-trash"></i> 刪除
             </a>
         </div>

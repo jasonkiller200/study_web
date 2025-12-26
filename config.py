@@ -6,6 +6,7 @@ basedir = os.path.abspath(os.path.dirname(__file__))
 class Config:
     """通用設定"""
     SECRET_KEY = os.environ.get('SECRET_KEY') or 'a-very-secret-key-that-you-should-change'
+    ADMIN_PASSWORD = os.environ.get('ADMIN_PASSWORD') or 'admin1234'
     SQLALCHEMY_TRACK_MODIFICATIONS = False
     NOTES_PER_PAGE = 9
 

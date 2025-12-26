@@ -1,4 +1,4 @@
-from flask import render_template, request, redirect, url_for, flash, jsonify, current_app
+from flask import render_template, request, redirect, url_for, flash, jsonify, current_app, session
 from . import notes
 from .. import db
 from ..models import LearningNote, Category
@@ -15,6 +15,10 @@ def allowed_file(filename):
 
 @notes.route('/add', methods=['GET', 'POST'])
 def add_note():
+    if not session.get('is_admin'):
+        flash('此操作需要管理員權限。', 'warning')
+        return redirect(url_for('main.index'))
+    
     if request.method == 'POST':
         title = request.form.get('title')
         category_id = request.form.get('category_id', type=int)
@@ -49,6 +53,10 @@ def view_note(id):
 
 @notes.route('/<int:id>/edit', methods=['GET', 'POST'])
 def edit_note(id):
+    if not session.get('is_admin'):
+        flash('此操作需要管理員權限。', 'warning')
+        return redirect(url_for('main.index'))
+        
     note = LearningNote.query.get_or_404(id)
     if request.method == 'POST':
         title = request.form.get('title')
@@ -73,6 +81,7 @@ def edit_note(id):
     
     categories = Category.query.order_by(Category.name).all()
     return render_template('edit_note.html', note=note, categories=categories)
+
 
 @notes.route('/<int:id>/delete')
 def delete_note(id):

@@ -1,4 +1,4 @@
-from flask import render_template, request, current_app
+from flask import render_template, request, current_app, session, jsonify, flash, redirect, url_for
 from . import main
 from .. import db
 from ..models import LearningNote, Category
@@ -63,3 +63,23 @@ def category_view(category_name):
     
     notes = pagination.items
     return render_template('index.html', notes=notes, current_category=category_name, pagination=pagination)
+
+@main.route('/check_admin', methods=['POST'])
+def check_admin():
+    data = request.get_json()
+    if not data or 'password' not in data:
+        return jsonify({'success': False, 'message': '未提供密碼。'}), 400
+
+    password = data.get('password')
+    if password == current_app.config['ADMIN_PASSWORD']:
+        session['is_admin'] = True
+        return jsonify({'success': True})
+    else:
+        session.pop('is_admin', None)
+        return jsonify({'success': False, 'message': '管理員密碼錯誤。'}), 401
+
+@main.route('/admin_logout')
+def admin_logout():
+    session.pop('is_admin', None)
+    flash('您已登出管理員模式。', 'info')
+    return redirect(url_for('main.index'))
