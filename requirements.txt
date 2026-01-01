@@ -2,3 +2,5 @@ Flask
 Flask-SQLAlchemy
 Werkzeug
 Pillow
+markdown
+bleach

@@ -13,7 +13,7 @@
                 </small>
             </p>
             <p class="card-text">
-                {{ note.content[:100] | safe }}{% if note.content|length > 100 %}...{% endif %}
+                {{ (note.content[:100] | markdown | safe | striptags)[:100] }}{% if note.content|length > 100 %}...{% endif %}
             </p>
             {% if note.processed_tags %}
                         <div class="mb-2">

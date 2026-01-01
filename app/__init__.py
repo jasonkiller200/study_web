@@ -4,6 +4,8 @@ from flask_sqlalchemy import SQLAlchemy
 from flask_assets import Environment
 from webassets.bundle import Bundle
 from config import config
+import markdown
+import bleach
 
 db = SQLAlchemy()
 assets = Environment()
@@ -47,6 +49,50 @@ def create_app(config_name):
 
     from .notes import notes as notes_blueprint
     flask_app.register_blueprint(notes_blueprint, url_prefix='/notes')
+
+    # Register Markdown filter
+    @flask_app.template_filter('markdown')
+    def markdown_filter(text):
+        """Convert Markdown to HTML with syntax highlighting support."""
+        if not text:
+            return ''
+        
+        # Configure markdown extensions
+        md = markdown.Markdown(extensions=[
+            'extra',  # Tables, fenced code blocks, etc.
+            'codehilite',  # Syntax highlighting
+            'nl2br',  # New line to <br>
+            'sane_lists'  # Better list handling
+        ])
+        
+        # Convert markdown to HTML
+        html = md.convert(text)
+        
+        # Sanitize HTML to prevent XSS (allow common tags)
+        allowed_tags = [
+            'a', 'abbr', 'acronym', 'b', 'blockquote', 'code', 'em', 'i', 
+            'li', 'ol', 'pre', 'strong', 'ul', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6',
+            'p', 'br', 'span', 'div', 'hr', 'table', 'thead', 'tbody', 'tr', 'th', 'td',
+            'img', 'del', 'ins', 'mark', 'sub', 'sup'
+        ]
+        allowed_attributes = {
+            '*': ['class', 'id'],
+            'a': ['href', 'title', 'target', 'rel'],
+            'img': ['src', 'alt', 'title', 'width', 'height'],
+            'code': ['class'],
+            'pre': ['class'],
+            'span': ['class'],
+            'div': ['class']
+        }
+        
+        safe_html = bleach.clean(
+            html,
+            tags=allowed_tags,
+            attributes=allowed_attributes,
+            strip=False
+        )
+        
+        return safe_html
 
     # Import models to ensure they are registered with SQLAlchemy
     with flask_app.app_context():

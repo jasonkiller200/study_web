@@ -37,7 +37,7 @@
 
         <div class="mb-3">
             <label for="content" class="form-label">內容</label>
-            <div id="editor" style="height: 300px;"></div>
+            <div id="editor"></div>
             <input type="hidden" name="content" id="hiddenContent" value="{{ note.content | e }}">
         </div>
         
@@ -57,34 +57,44 @@
 {% endblock %}
 
 {% block scripts %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/toastui-editor.min.css') }}" />
+<link rel="stylesheet" href="{{ url_for('static', filename='css/toastui-editor-dark.css') }}" />
+<script src="{{ url_for('static', filename='js/toastui-editor.min.js') }}"></script>
+<script src="{{ url_for('static', filename='js/toastui-editor-zh-tw.min.js') }}"></script>
 <script>
 document.addEventListener('DOMContentLoaded', function() {
-    // Quill Editor Setup
-    var quill = new Quill('#editor', {
-        theme: 'snow',
-        modules: {
-            toolbar: [
-                ['bold', 'italic', 'underline', 'strike'], ['blockquote', 'code-block'],
-                [{ 'list': 'ordered'}, { 'list': 'bullet' }],
-                [{ 'header': [1, 2, 3, 4, 5, 6, false] }],
-                ['link', 'image', 'video'],
-                ['clean']
-            ]
-        }
-    });
-    // Set initial content for edit page
+    // Get initial content
     const initialContent = document.getElementById('hiddenContent').value;
-    quill.root.innerHTML = initialContent;
+    
+    // Toast UI Editor Setup
+    const editor = new toastui.Editor({
+        el: document.querySelector('#editor'),
+        height: '500px',
+        initialEditType: 'wysiwyg',
+        previewStyle: 'vertical',
+        language: 'zh-TW',
+        theme: 'dark',
+        usageStatistics: false,
+        initialValue: initialContent,
+        toolbarItems: [
+            ['heading', 'bold', 'italic', 'strike'],
+            ['hr', 'quote'],
+            ['ul', 'ol', 'task', 'indent', 'outdent'],
+            ['table', 'image', 'link'],
+            ['code', 'codeblock'],
+            ['scrollSync']
+        ]
+    });
 
     // Tagify Setup
     var input = document.querySelector('#tags');
     new Tagify(input);
 
-    // Form Submission: Copy Quill content to hidden field
+    // Form Submission: Copy editor content to hidden field (as Markdown)
     var form = document.querySelector('#noteForm');
     form.addEventListener('submit', function(e) {
         var hiddenContent = document.querySelector('#hiddenContent');
-        hiddenContent.value = quill.root.innerHTML;
+        hiddenContent.value = editor.getMarkdown();
     });
 
     // --- New Dynamic Category Logic ---
