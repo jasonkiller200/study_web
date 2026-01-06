@@ -79,18 +79,158 @@ document.addEventListener('DOMContentLoaded', function() {
             ['table', 'image', 'link'],
             ['code', 'codeblock'],
             ['scrollSync']
-        ]
+        ],
+        hooks: {
+            addImageBlobHook: async (blob, callback) => {
+                const formData = new FormData();
+                formData.append('file', blob);
+
+                try {
+                    const response = await fetch("{{ url_for('notes.upload_image') }}", {
+                        method: 'POST',
+                        body: formData
+                    });
+
+                    if (!response.ok) {
+                        const error = await response.json();
+                        alert('圖片上傳失敗: ' + (error.error || '未知錯誤'));
+                        return;
+                    }
+
+                    const data = await response.json();
+                    callback(data.location, blob.name || '圖片');
+                } catch (error) {
+                    console.error('圖片上傳錯誤:', error);
+                    alert('圖片上傳失敗，請稍後再試。');
+                }
+            }
+        }
     });
 
     // Tagify Setup
     var input = document.querySelector('#tags');
     new Tagify(input);
 
-    // Form Submission: Copy editor content to hidden field (as Markdown)
+    // Helper function to convert base64 to blob
+    function base64ToBlob(base64, mimeType) {
+        const byteCharacters = atob(base64);
+        const byteArrays = [];
+        for (let i = 0; i < byteCharacters.length; i++) {
+            byteArrays.push(byteCharacters.charCodeAt(i));
+        }
+        return new Blob([new Uint8Array(byteArrays)], { type: mimeType });
+    }
+
+    // Helper function to upload image and return new URL
+    async function uploadImageBlob(blob, filename) {
+        const formData = new FormData();
+        formData.append('file', blob, filename);
+
+        try {
+            const response = await fetch("{{ url_for('notes.upload_image') }}", {
+                method: 'POST',
+                body: formData
+            });
+
+            if (!response.ok) {
+                throw new Error('上傳失敗');
+            }
+
+            const data = await response.json();
+            return data.location;
+        } catch (error) {
+            console.error('圖片上傳錯誤:', error);
+            return null;
+        }
+    }
+
+    // Process all images in markdown before submission
+    async function processImagesInMarkdown(markdown) {
+        // Regular expression to find markdown images: ![alt](url)
+        const imgRegex = /!\[([^\]]*)\]\(([^\)]+)\)/g;
+        let match;
+        const replacements = [];
+
+        while ((match = imgRegex.exec(markdown)) !== null) {
+            const fullMatch = match[0];
+            const alt = match[1];
+            const url = match[2];
+
+            // Check if it's a base64 image
+            if (url.startsWith('data:image/')) {
+                const matches = url.match(/^data:(image\/[^;]+);base64,(.+)$/);
+                if (matches) {
+                    const mimeType = matches[1];
+                    const base64Data = matches[2];
+                    const blob = base64ToBlob(base64Data, mimeType);
+                    const ext = mimeType.split('/')[1];
+                    const filename = `pasted-${Date.now()}.${ext}`;
+                    
+                    const newUrl = await uploadImageBlob(blob, filename);
+                    if (newUrl) {
+                        replacements.push({ old: fullMatch, new: `![${alt}](${newUrl})` });
+                    }
+                }
+            }
+            // Check if it's an external URL (not from our server)
+            else if (url.startsWith('http://') || url.startsWith('https://')) {
+                // Skip if it's already from our server
+                if (!url.includes(window.location.hostname)) {
+                    try {
+                        // Fetch and upload external image
+                        const response = await fetch(url);
+                        const blob = await response.blob();
+                        const ext = blob.type.split('/')[1] || 'jpg';
+                        const filename = `external-${Date.now()}.${ext}`;
+                        
+                        const newUrl = await uploadImageBlob(blob, filename);
+                        if (newUrl) {
+                            replacements.push({ old: fullMatch, new: `![${alt}](${newUrl})` });
+                        }
+                    } catch (error) {
+                        console.error('外部圖片下載失敗:', url, error);
+                    }
+                }
+            }
+        }
+
+        // Apply all replacements
+        let processedMarkdown = markdown;
+        for (const replacement of replacements) {
+            processedMarkdown = processedMarkdown.replace(replacement.old, replacement.new);
+        }
+
+        return processedMarkdown;
+    }
+
+    // Form Submission: Process images and copy editor content to hidden field
     var form = document.querySelector('#noteForm');
-    form.addEventListener('submit', function(e) {
-        var hiddenContent = document.querySelector('#hiddenContent');
-        hiddenContent.value = editor.getMarkdown();
+    form.addEventListener('submit', async function(e) {
+        e.preventDefault();
+        
+        // Show loading indicator
+        const submitBtn = form.querySelector('button[type="submit"]');
+        const originalBtnText = submitBtn.innerHTML;
+        submitBtn.disabled = true;
+        submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> 處理中...';
+
+        try {
+            // Get markdown and process images
+            const markdown = editor.getMarkdown();
+            const processedMarkdown = await processImagesInMarkdown(markdown);
+            
+            // Set processed content
+            var hiddenContent = document.querySelector('#hiddenContent');
+            hiddenContent.value = processedMarkdown;
+            
+            // Submit the form
+            form.submit();
+        } catch (error) {
+            console.error('提交錯誤:', error);
+            alert('提交失敗，請稍後再試。');
+            submitBtn.disabled = false;
+            submitBtn.innerHTML = originalBtnText;
+        }
     });
 
     // --- New Dynamic Category Logic ---

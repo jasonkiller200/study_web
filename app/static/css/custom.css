@@ -1,18 +1,180 @@
-.ql-editor .ql-size-small {
-  font-size: 0.75em !important;
-}
-.ql-editor .ql-size-large {
-  font-size: 1.5em !important;
-}
-.ql-editor .ql-size-huge {
-  font-size: 2.5em !important;
-}
-.ql-editor .ql-size-normal {
-  font-size: 1em !important;
-}
-
+/* ===== Content Display Base ===== */
 .content-display {
   font-size: 1em; /* Ensure default font size for content */
+}
+
+/* ===== Toast UI Editor Styles ===== */
+/* Heading sizes in editor and view mode */
+.content-display h1, .toastui-editor-contents h1 {
+  font-size: 2em;
+  font-weight: bold;
+  margin-top: 24px;
+  margin-bottom: 16px;
+}
+
+.content-display h2, .toastui-editor-contents h2 {
+  font-size: 1.75em;
+  font-weight: bold;
+  margin-top: 24px;
+  margin-bottom: 16px;
+}
+
+.content-display h3, .toastui-editor-contents h3 {
+  font-size: 1.5em;
+  font-weight: bold;
+  margin-top: 24px;
+  margin-bottom: 16px;
+}
+
+.content-display h4, .toastui-editor-contents h4 {
+  font-size: 1.25em;
+  font-weight: bold;
+  margin-top: 24px;
+  margin-bottom: 16px;
+}
+
+.content-display h5, .toastui-editor-contents h5 {
+  font-size: 1.125em;
+  font-weight: bold;
+  margin-top: 24px;
+  margin-bottom: 16px;
+}
+
+.content-display h6, .toastui-editor-contents h6 {
+  font-size: 1em;
+  font-weight: bold;
+  margin-top: 24px;
+  margin-bottom: 16px;
+}
+
+.content-display p, .toastui-editor-contents p {
+  font-size: 1em;
+  line-height: 1.6;
+  margin-bottom: 16px;
+}
+
+/* Image responsive in view mode */
+.content-display img {
+  max-width: 100%;
+  height: auto;
+}
+
+/* Lists styles */
+.content-display ul, .toastui-editor-contents ul,
+.content-display ol, .toastui-editor-contents ol {
+  margin-bottom: 16px;
+  padding-left: 2em;
+}
+
+.content-display li, .toastui-editor-contents li {
+  margin-bottom: 8px;
+  line-height: 1.6;
+}
+
+/* Blockquote styles */
+.content-display blockquote, .toastui-editor-contents blockquote {
+  border-left: 4px solid #00bc8c;
+  padding-left: 16px;
+  margin: 16px 0;
+  color: #adb5bd;
+  font-style: italic;
+}
+
+/* Table styles for dark theme */
+.content-display table, .toastui-editor-contents table {
+  width: 100%;
+  margin-bottom: 16px;
+  border-collapse: collapse;
+  background-color: #272b30;
+}
+
+.content-display th, .toastui-editor-contents th {
+  background-color: #343a40;
+  color: #00bc8c;
+  font-weight: bold;
+  padding: 12px;
+  text-align: left;
+  border: 1px solid #495057;
+}
+
+.content-display td, .toastui-editor-contents td {
+  padding: 12px;
+  border: 1px solid #495057;
+  color: #fff;
+}
+
+.content-display tr:hover, .toastui-editor-contents tr:hover {
+  background-color: #2c3136;
+}
+
+/* Code inline styles */
+.content-display code, .toastui-editor-contents code {
+  background-color: #343a40;
+  color: #e83e8c;
+  padding: 2px 6px;
+  border-radius: 3px;
+  font-family: 'Courier New', Courier, monospace;
+  font-size: 0.9em;
+}
+
+/* Code block styles */
+.content-display pre, .toastui-editor-contents pre {
+  background-color: #2b2b2b;
+  color: #f8f8f2;
+  padding: 16px;
+  border-radius: 5px;
+  overflow-x: auto;
+  margin-bottom: 16px;
+  border: 1px solid #495057;
+}
+
+.content-display pre code, .toastui-editor-contents pre code {
+  background-color: transparent;
+  color: inherit;
+  padding: 0;
+  font-size: 0.9em;
+  line-height: 1.5;
+}
+
+/* Horizontal rule */
+.content-display hr, .toastui-editor-contents hr {
+  border: 0;
+  border-top: 2px solid #495057;
+  margin: 24px 0;
+}
+
+/* Links in content */
+.content-display a, .toastui-editor-contents a {
+  color: #00bc8c;
+  text-decoration: none;
+}
+
+.content-display a:hover, .toastui-editor-contents a:hover {
+  color: #00d9a5;
+  text-decoration: underline;
+}
+
+/* Strong and emphasis */
+.content-display strong, .toastui-editor-contents strong,
+.content-display b, .toastui-editor-contents b {
+  font-weight: bold;
+  color: #fff;
+}
+
+.content-display em, .toastui-editor-contents em,
+.content-display i, .toastui-editor-contents i {
+  font-style: italic;
+}
+
+/* Strikethrough */
+.content-display del, .toastui-editor-contents del {
+  text-decoration: line-through;
+  color: #6c757d;
+}
+
+/* Task list */
+.content-display input[type="checkbox"], .toastui-editor-contents input[type="checkbox"] {
+  margin-right: 8px;
 }
 
 /* ===== Dark Theme Overrides ===== */
@@ -47,32 +209,23 @@ a.list-group-item:hover, a.list-group-item:focus {
     border-color: rgba(255, 255, 255, 0.125);
 }
 
-/* Quill.js Dark Theme */
-.ql-editor {
-    color: #ced4da;
+/* Toast UI Editor Dark Theme */
+.toastui-editor-defaultUI {
+    border: 1px solid #495057;
 }
 
-.ql-toolbar {
-    background: #343a40;
-    border-bottom: 1px solid #495057 !important;
-}
-
-.ql-container.ql-snow {
-    border: 1px solid #495057 !important;
-}
-
-.ql-snow .ql-stroke {
-    stroke: #ced4da;
-}
-.ql-snow .ql-fill, .ql-snow .ql-stroke.ql-fill {
-    fill: #ced4da;
-}
-.ql-snow .ql-picker {
-    color: #ced4da;
-}
-.ql-snow .ql-picker-options {
+.toastui-editor-toolbar {
     background-color: #343a40;
-    border-color: #495057 !important;
+    border-bottom: 1px solid #495057;
+}
+
+.toastui-editor-md-container,
+.toastui-editor-ww-container {
+    background-color: #2b2b2b;
+}
+
+.toastui-editor-contents {
+    color: #f8f8f2;
 }
 
 /* Tagify Dark Theme */
@@ -95,9 +248,18 @@ pre {
 .navbar-dark .navbar-toggler-icon {
     background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 30 30'%3e%3cpath stroke='rgba%28255, 255, 255, 0.55%29' stroke-linecap='round' stroke-miterlimit='10' stroke-width='2' d='M4 7h22M4 15h22M4 23h22'/%3e%3c/svg%3e");
 }
+Syntax highlighting with Prism.js */
+.content-display .codehilite,
+.content-display .highlight {
+    background-color: #2b2b2b;
+    border-radius: 5px;
+    margin-bottom: 16px;
+}
 
-/* Adjust form controls for dark theme */
-.form-control, .form-select {
+.content-display .codehilite pre,
+.content-display .highlight pre {
+    margin: 0;
+    background-color: transpare
     background-color: #343a40;
     color: #fff;
     border-color: #495057;
